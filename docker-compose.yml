@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:5.6.37
+    container_name: assembleia-mysql
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+    volumes:
+      - ./scripts/mysql/createTables-assembleia.sql:/docker-entrypoint-initdb.d/createTables-assembleia.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3.7-management-alpine
+    container_name: assembleia-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./scripts/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 3
