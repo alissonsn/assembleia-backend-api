@@ -13,8 +13,6 @@ import br.com.assembleia.backendapi.model.Voto;
  */
 public interface VotoRepository extends JpaRepository<Voto, Long> {
 
-	Voto findByAssociadoEquals(Associado associado);
-		
 	Boolean existsByAssociadoEqualsAndSessaoEquals(Associado associado, SessaoVotacao sessao);
 	
 }

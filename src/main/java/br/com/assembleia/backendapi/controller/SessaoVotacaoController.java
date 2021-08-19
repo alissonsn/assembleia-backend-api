@@ -3,11 +3,12 @@ package br.com.assembleia.backendapi.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.assembleia.backendapi.controller.dto.VotoDTO;
 import br.com.assembleia.backendapi.exception.SessaoVotacaoException;
 import br.com.assembleia.backendapi.exception.VotoException;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
@@ -42,10 +43,10 @@ public class SessaoVotacaoController extends AbstractController<SessaoVotacao, S
 	 * @throws VotoException
 	 */
 	@ApiOperation(value = "Método responsável por registrar o voto na sessão de votação", code = 200)
-	@GetMapping("v1/votar")
-	public ResponseEntity<Voto> votar(@RequestParam Long idAssociado, @RequestParam Long idPauta, @RequestParam Boolean voto) 
+	@PostMapping("/votar")
+	public ResponseEntity<Voto> votar(@RequestBody VotoDTO votoDTO) 
 			throws SessaoVotacaoException, VotoException {
-		Voto v = service.votar(idAssociado, idPauta, voto);
+		Voto v = service.votar(votoDTO.getIdAssociado(), votoDTO.getIdPauta(), votoDTO.getVoto());
 		
 		return new ResponseEntity<Voto>(v, HttpStatus.OK);
 	}

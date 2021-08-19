@@ -22,10 +22,6 @@ public class VotoService extends AbstractService<Voto, VotoRepository> {
 		super(repository);
 	}
 
-	public Voto findByAssociadoEquals(Associado associado) {
-		return repository.findByAssociadoEquals(associado);
-	}
-	
 	public Boolean existsByAssociadoAndSessao(Long idAssociado, Long idSessao) {
 		return repository.existsByAssociadoEqualsAndSessaoEquals(new Associado(idAssociado), new SessaoVotacao(idSessao));
 	}

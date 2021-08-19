@@ -72,6 +72,7 @@ public class SessaoVotacaoService extends AbstractService<SessaoVotacao, SessaoV
 			Voto novoVoto = new Voto();
 			novoVoto.setAssociado(associado);
 			novoVoto.setVoto(voto);
+			novoVoto.setSessao(sv);
 
 			novoVoto = votoService.save(novoVoto);
 			sv.getVotos().add(novoVoto);

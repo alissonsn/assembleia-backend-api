@@ -71,7 +71,7 @@ public class SessaoVotacao extends AbstractEntity {
 		long favoravel = votos.stream().filter(v -> Boolean.TRUE.equals(v.getVoto())).count();
 		long desfavoravel = votos.stream().filter(v -> !Boolean.TRUE.equals(v.getVoto())).count();
 
-		return "A pauta teve um total de "+ favoravel +" votos favoráveis e " + desfavoravel +" votos desfavoráveis.";
+		return "A pauta " + pauta.getNome() + " teve um total de "+ favoravel +" votos favoráveis e " + desfavoravel +" votos desfavoráveis.";
 	}
 
 	public void setTempoMinutos(String tempoMinutos) {
