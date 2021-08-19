@@ -1,9 +1,10 @@
 package br.com.assembleia.backendapi.model;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -44,11 +45,12 @@ public class SessaoVotacao extends AbstractEntity {
 
 	@OneToMany
 	@JoinColumn(name = "id_sessao_votacao")
-	private List<Voto> votos = new ArrayList<Voto>();
+	private List<Voto> votos;
 	
 	public SessaoVotacao() {
 		tempoHoras = "";
 		tempoMinutos = String.valueOf(DEFAULT_SESSION_TIME);
+		votos = new ArrayList<Voto>();
 	}
 	
 	public SessaoVotacao(Long id) {
@@ -85,24 +87,21 @@ public class SessaoVotacao extends AbstractEntity {
 	 * Verifica se a sessão de votação está ativa
 	 * 
 	 */
-	public Boolean hasTimedOut() {
-		LocalDateTime dataAtual = LocalDateTime.now();
+	public Boolean hasNotTimedOut() {
+		LocalDateTime inicioSessao = creationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();;
+		LocalDateTime fimSessao = inicioSessao;
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-		LocalDateTime dataCriacao = LocalDateTime.parse(getCreationDate().toString(), formatter);
-		LocalDateTime dataEncerramento = dataCriacao;
-
-		// Verifica se há horas informada para encerramento da sessão
-		if(!getTempoHoras().isBlank() || getTempoHoras() != null) {			
-			dataEncerramento = dataCriacao.plusHours(Long.parseLong(getTempoHoras()));
+		Optional<String> optTempoHoras = Optional.ofNullable(tempoHoras);
+		if(optTempoHoras.isPresent() && !optTempoHoras.get().isBlank()) {			
+			fimSessao = inicioSessao.plusHours(Long.parseLong(optTempoHoras.get()));
 		}
 
-		// Verifica se há minutos informada para encerramento da sessão
-		if(!getTempoMinutos().isBlank() || getTempoMinutos() != null) {			
-			dataEncerramento = dataCriacao.plusMinutes(Long.parseLong(getTempoMinutos()));
+		Optional<String> optTempoMinutos = Optional.ofNullable(tempoMinutos);
+		if(optTempoMinutos.isPresent() && !optTempoMinutos.get().isBlank()) {					
+			fimSessao = inicioSessao.plusMinutes(Long.parseLong(optTempoMinutos.get()));
 		}
 
-		return dataAtual.isBefore(dataEncerramento);
+		return LocalDateTime.now().isBefore(fimSessao);
 	}
 
 }

@@ -39,7 +39,7 @@ public class FimSessaoTask {
 		
 		List<SessaoVotacao> sessoesAtivas = sessaoVotacaoService.findSessoesAtivas();
 		
-		sessoesAtivas.stream().filter(s -> s.hasTimedOut()).forEach(s -> {
+		sessoesAtivas.stream().filter(s -> s.hasNotTimedOut()).forEach(s -> {
 			s.setAtiva(false);
 			sessaoVotacaoService.save(s);
 			notificationService.sendVotacaoResultadoAssembleia(s.getVotosTotal());

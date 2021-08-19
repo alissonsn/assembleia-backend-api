@@ -59,7 +59,7 @@ public class SessaoVotacaoService extends AbstractService<SessaoVotacao, SessaoV
 
 			SessaoVotacao sv = repository.findByPautaEquals(new Pauta(idPauta));
 
-			if(!sv.hasTimedOut()) {
+			if(!sv.hasNotTimedOut()) {
 				throw new SessaoVotacaoException();
 			}
 
