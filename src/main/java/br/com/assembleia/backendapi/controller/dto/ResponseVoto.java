@@ -11,12 +11,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class VotoDTO implements Serializable {
+public class ResponseVoto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Long idAssociado; 
-	private Long idPauta; 
+	private String nome; 
+	private String pauta; 
 	private Boolean voto;
 	
 }
