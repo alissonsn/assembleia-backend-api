@@ -13,7 +13,6 @@ import br.com.assembleia.backendapi.controller.dto.ResponseVoto;
 import br.com.assembleia.backendapi.exception.SessaoVotacaoException;
 import br.com.assembleia.backendapi.exception.VotoException;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
-import br.com.assembleia.backendapi.model.Voto;
 import br.com.assembleia.backendapi.repository.SessaoVotacaoRepository;
 import br.com.assembleia.backendapi.service.SessaoVotacaoService;
 import io.swagger.annotations.Api;
@@ -35,10 +34,9 @@ public class SessaoVotacaoController extends AbstractController<SessaoVotacao, S
 	}
 
 	/**
-	 * 
-	 * @param idAssociado
-	 * @param idPauta
-	 * @param voto
+	 * Método responsável por registrar o voto na sessão de votação
+	 *
+	 * @param votoDTO
 	 * @return
 	 * @throws SessaoVotacaoException
 	 * @throws VotoException
@@ -47,14 +45,14 @@ public class SessaoVotacaoController extends AbstractController<SessaoVotacao, S
 	@PostMapping("/votar")
 	public ResponseEntity<ResponseVoto> votar(@RequestBody RequestVoto votoDTO) 
 			throws SessaoVotacaoException, VotoException {
-		Voto v = service.votar(votoDTO.getIdAssociado(), votoDTO.getIdPauta(), votoDTO.getVoto());
+		var v = service.votar(votoDTO.getIdAssociado(), votoDTO.getIdPauta(), votoDTO.getVoto());
 		
-		ResponseVoto responseVoto = new ResponseVoto();
+		var responseVoto = new ResponseVoto();
 		responseVoto.setNome(v.getAssociado().getNome());
 		responseVoto.setPauta(v.getSessao().getPauta().getNome());
 		responseVoto.setVoto(v.getVoto());
 		
-		return new ResponseEntity<ResponseVoto>(responseVoto, HttpStatus.OK);
+		return new ResponseEntity<>(responseVoto, HttpStatus.OK);
 	}
 
 }

@@ -31,12 +31,11 @@ public class UserInfoService {
 	 * 
 	 * @param cpf
 	 * @return String
-	 * @throws UnableToVoteException 
 	 */
 	public boolean verificarAssociadoVotante(String cpf) {
 		return Optional.ofNullable(restTemplate.getForObject
 				(urlUserInfo+cpf, AssociadoStatus.class)).
-					map(u -> u.getStatus()).orElse("").equals(StatusEnum.ABLE_TO_VOTE.getStatus());
+					map(AssociadoStatus::getStatus).orElse("").equals(StatusEnum.ABLE_TO_VOTE.getStatus());
 	}
 	
 }

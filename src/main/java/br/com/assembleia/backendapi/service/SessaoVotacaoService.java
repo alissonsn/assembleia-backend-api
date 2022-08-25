@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.assembleia.backendapi.exception.SessaoVotacaoException;
 import br.com.assembleia.backendapi.exception.VotoException;
-import br.com.assembleia.backendapi.model.Associado;
 import br.com.assembleia.backendapi.model.Pauta;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
 import br.com.assembleia.backendapi.model.Voto;
@@ -49,27 +48,26 @@ public class SessaoVotacaoService extends AbstractService<SessaoVotacao, SessaoV
 	 * @return
 	 * @throws SessaoVotacaoException
 	 * @throws VotoException
-	 * @throws UnableToVoteException
 	 */
 	public Voto votar(Long idAssociado, Long idPauta, Boolean voto) throws SessaoVotacaoException, VotoException {
 
-		Associado associado = associadoService.findById(idAssociado);
+		var associado = associadoService.findById(idAssociado);
 		
 		if(userInfoService.verificarAssociadoVotante(associado.getCpf())) {
 
-			SessaoVotacao sv = repository.findByPautaEquals(new Pauta(idPauta));
+			var sv = repository.findByPautaEquals(new Pauta(idPauta));
 
-			if(!sv.hasNotTimedOut()) {
+			if(Boolean.FALSE.equals(sv.hasNotTimedOut())) {
 				throw new SessaoVotacaoException();
 			}
 
-			Boolean existeVoto = votoService.existsByAssociadoAndSessao(associado.getId(), sv.getId());
+			var existeVoto = votoService.existsByAssociadoAndSessao(associado.getId(), sv.getId());
 
-			if(existeVoto) {
+			if(Boolean.TRUE.equals(existeVoto)) {
 				throw new VotoException("Associado já registrou voto nesta sessão.");
 			}
 
-			Voto novoVoto = new Voto();
+			var novoVoto = new Voto();
 			novoVoto.setAssociado(associado);
 			novoVoto.setVoto(voto);
 			novoVoto.setSessao(sv);
