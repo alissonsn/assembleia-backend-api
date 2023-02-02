@@ -1,15 +1,14 @@
 package br.com.assembleia.backendapi.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import br.com.assembleia.backendapi.model.Associado;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
  * 
  * @author Alisson Nascimento
  *
  */
-public interface AssociadoRepository extends JpaRepository<Associado, Long>{
+public interface AssociadoRepository extends ReactiveCrudRepository<Associado, Long> {
 
 	boolean existsByCpf(String cpf);
 	

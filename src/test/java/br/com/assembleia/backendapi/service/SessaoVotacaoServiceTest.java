@@ -18,9 +18,10 @@ import br.com.assembleia.backendapi.model.Pauta;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
 import br.com.assembleia.backendapi.model.Voto;
 import br.com.assembleia.backendapi.repository.SessaoVotacaoRepository;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-public class SessaoVotacaoServiceTest {
+class SessaoVotacaoServiceTest {
 	
 	@Mock
 	private VotoService votoService;
@@ -52,7 +53,7 @@ public class SessaoVotacaoServiceTest {
     	sessaoVotacao.setPauta(pauta);
     	sessaoVotacao.setTempoMinutos("-10");
     	
-    	when(associadoService.findById(associado.getId())).thenReturn(associado);
+    	when(associadoService.findById(associado.getId())).thenReturn(Mono.just(associado));
     	when(userInfoService.verificarAssociadoVotante(associado.getCpf())).thenReturn(false);
     	
     	assertThrows(VotoException.class, () -> sessaoVotacaoService.votar(associado.getId(), idPauta, Boolean.TRUE));
@@ -74,7 +75,7 @@ public class SessaoVotacaoServiceTest {
     	sessaoVotacao.setPauta(pauta);
     	sessaoVotacao.setTempoMinutos("-10");
     	
-    	when(associadoService.findById(associado.getId())).thenReturn(associado);
+    	when(associadoService.findById(associado.getId())).thenReturn(Mono.just(associado));
     	when(userInfoService.verificarAssociadoVotante(associado.getCpf())).thenReturn(true);
     	when(repository.findByPautaEquals(pauta)).thenReturn(sessaoVotacao);
     	
@@ -97,7 +98,7 @@ public class SessaoVotacaoServiceTest {
     	sessaoVotacao.setPauta(pauta);
     	sessaoVotacao.setTempoMinutos("10");
     	
-    	when(associadoService.findById(associado.getId())).thenReturn(associado);
+    	when(associadoService.findById(associado.getId())).thenReturn(Mono.just(associado));
     	when(userInfoService.verificarAssociadoVotante(associado.getCpf())).thenReturn(true);
     	when(repository.findByPautaEquals(pauta)).thenReturn(sessaoVotacao);
     	when(votoService.existsByAssociadoAndSessao(associado.getId(), sessaoVotacao.getId())).thenReturn(true);
@@ -127,12 +128,12 @@ public class SessaoVotacaoServiceTest {
 		novoVoto.setSessao(sessaoVotacao);
 		novoVoto.setVoto(Boolean.TRUE);
     	
-    	when(associadoService.findById(associado.getId())).thenReturn(associado);
+    	when(associadoService.findById(associado.getId())).thenReturn(Mono.just(associado));
     	when(userInfoService.verificarAssociadoVotante(associado.getCpf())).thenReturn(true);
     	when(repository.findByPautaEquals(pauta)).thenReturn(sessaoVotacao);
     	when(votoService.existsByAssociadoAndSessao(associado.getId(), sessaoVotacao.getId())).thenReturn(false);
-    	when(votoService.save(ArgumentMatchers.any(Voto.class))).thenReturn(novoVoto);
-    	when(sessaoVotacaoService.update(sessaoVotacao)).thenReturn(sessaoVotacao);
+    	when(votoService.save(ArgumentMatchers.any(Voto.class))).thenReturn(Mono.just(novoVoto));
+    	when(sessaoVotacaoService.update(sessaoVotacao)).thenReturn(Mono.just(sessaoVotacao));
     	
     	assertTrue(sessaoVotacaoService.votar(associado.getId(), idPauta, Boolean.TRUE).equals(novoVoto));
     	assertTrue(!sessaoVotacao.getVotos().isEmpty());

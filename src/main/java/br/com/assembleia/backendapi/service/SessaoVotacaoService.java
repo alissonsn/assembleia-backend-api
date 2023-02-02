@@ -1,7 +1,5 @@
 package br.com.assembleia.backendapi.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +9,8 @@ import br.com.assembleia.backendapi.model.Pauta;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
 import br.com.assembleia.backendapi.model.Voto;
 import br.com.assembleia.backendapi.repository.SessaoVotacaoRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class SessaoVotacaoService extends AbstractService<SessaoVotacao, SessaoV
 		this.userInfoService = userInfoService;
 	}
 
-	public List<SessaoVotacao> findSessoesAtivas() {
+	public Flux<SessaoVotacao> findSessoesAtivas() {
 		return repository.findByAtivaIsTrue();
 	}
 
@@ -49,38 +49,36 @@ public class SessaoVotacaoService extends AbstractService<SessaoVotacao, SessaoV
 	 * @throws SessaoVotacaoException
 	 * @throws VotoException
 	 */
-	public Voto votar(Long idAssociado, Long idPauta, Boolean voto) throws SessaoVotacaoException, VotoException {
+	public Mono<Voto> votar(Long idAssociado, Long idPauta, Boolean voto) throws SessaoVotacaoException, VotoException {
 
-		var associado = associadoService.findById(idAssociado);
-		
-		if(userInfoService.verificarAssociadoVotante(associado.getCpf())) {
+		var sv = repository.findByPautaEquals(new Pauta(idPauta));
 
-			var sv = repository.findByPautaEquals(new Pauta(idPauta));
-
-			if(Boolean.FALSE.equals(sv.hasNotTimedOut())) {
-				throw new SessaoVotacaoException();
-			}
-
-			var existeVoto = votoService.existsByAssociadoAndSessao(associado.getId(), sv.getId());
-
-			if(Boolean.TRUE.equals(existeVoto)) {
-				throw new VotoException("Associado já registrou voto nesta sessão.");
-			}
-
-			var novoVoto = new Voto();
-			novoVoto.setAssociado(associado);
-			novoVoto.setVoto(voto);
-			novoVoto.setSessao(sv);
-
-			novoVoto = votoService.save(novoVoto);
-			sv.getVotos().add(novoVoto);
-			update(sv);
-
-			return novoVoto;
-
-		} else {
-			throw new VotoException("Associado não habilitado para votação.");
+		if(Boolean.FALSE.equals(sv.hasNotTimedOut())) {
+			throw new SessaoVotacaoException();
 		}
+
+		var existeVoto = votoService.existsByAssociadoAndSessao(idAssociado, sv.getId());
+
+		if(Boolean.TRUE.equals(existeVoto)) {
+			throw new VotoException("Associado já registrou voto nesta sessão.");
+		}
+
+		var associadoMono = associadoService.findById(idAssociado);
+
+		return associadoMono.
+				filter(associado -> userInfoService.verificarAssociadoVotante(associado.getCpf())).
+				flatMap(associado -> {
+					var novoVoto = new Voto();
+					novoVoto.setAssociado(associado);
+					novoVoto.setVoto(voto);
+					novoVoto.setSessao(sv);
+
+					Mono<Voto> monoVoto = votoService.save(novoVoto);
+					sv.getVotos().add(novoVoto);
+					update(sv);
+
+					return monoVoto;
+				});
 
 	}
 

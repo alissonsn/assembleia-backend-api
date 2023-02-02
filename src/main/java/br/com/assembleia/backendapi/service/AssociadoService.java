@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import br.com.assembleia.backendapi.exception.CpfJaAssociadoException;
 import br.com.assembleia.backendapi.model.Associado;
 import br.com.assembleia.backendapi.repository.AssociadoRepository;
+import reactor.core.publisher.Mono;
 
 /**
  * 
@@ -23,7 +24,7 @@ public class AssociadoService extends AbstractService<Associado, AssociadoReposi
 	}
 	
 	@Override
-	public Associado save(Associado entity) {
+	public Mono<Associado> save(Associado entity) {
 		
 		if (repository.existsByCpf(entity.getCpf()))
 			throw new CpfJaAssociadoException("O CPF informado já está cadastro em algum associado.");

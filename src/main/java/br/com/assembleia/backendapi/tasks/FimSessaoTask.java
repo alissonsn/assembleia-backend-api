@@ -1,7 +1,6 @@
 package br.com.assembleia.backendapi.tasks;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +10,8 @@ import org.springframework.stereotype.Component;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
 import br.com.assembleia.backendapi.service.NotificationService;
 import br.com.assembleia.backendapi.service.SessaoVotacaoService;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * 
@@ -35,14 +36,15 @@ public class FimSessaoTask {
 
 	@Scheduled(fixedRate = 60000)
 	public void reportCurrentTime() {
-		log.info("Finalizando votações: ", LocalDateTime.now());
+		log.info("Finalizando votações: {}", LocalDateTime.now());
 		
-		List<SessaoVotacao> sessoesAtivas = sessaoVotacaoService.findSessoesAtivas();
+		Flux<SessaoVotacao> sessoesAtivas = sessaoVotacaoService.findSessoesAtivas();
 		
-		sessoesAtivas.stream().filter(s -> s.hasNotTimedOut()).forEach(s -> {
+		sessoesAtivas.filter(SessaoVotacao::hasNotTimedOut).flatMap(s -> {
 			s.setAtiva(false);
 			sessaoVotacaoService.save(s);
 			notificationService.sendVotacaoResultadoAssembleia(s.getVotosTotal());
+			return Mono.just(s);
 		});
 	}
 	

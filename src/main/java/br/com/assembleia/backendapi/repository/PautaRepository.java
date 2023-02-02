@@ -1,14 +1,13 @@
 package br.com.assembleia.backendapi.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import br.com.assembleia.backendapi.model.Pauta;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 /**
  * 
  * @author Alisson Nascimento
  *
  */
-public interface PautaRepository extends JpaRepository<Pauta, Long> {
+public interface PautaRepository extends ReactiveCrudRepository<Pauta, Long> {
 
 }

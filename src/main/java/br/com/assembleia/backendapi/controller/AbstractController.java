@@ -1,10 +1,10 @@
 package br.com.assembleia.backendapi.controller;
 
-import java.util.List;
+import java.util.Objects;
 
 import javax.validation.Valid;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import br.com.assembleia.backendapi.model.AbstractEntity;
 import br.com.assembleia.backendapi.service.AbstractService;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * 
@@ -25,7 +27,7 @@ import br.com.assembleia.backendapi.service.AbstractService;
  * @param <R>
  * @param <S>
  */
-public class AbstractController<T extends AbstractEntity, R extends JpaRepository<T,Long>, S extends AbstractService<T, R>> {
+public class AbstractController<T extends AbstractEntity, R extends ReactiveCrudRepository<T,Long>, S extends AbstractService<T, R>> {
 
 	protected final S service;
 	
@@ -34,51 +36,54 @@ public class AbstractController<T extends AbstractEntity, R extends JpaRepositor
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<T>> findAll() {
-		List<T> entities = service.findAll();
+	public ResponseEntity<Flux<T>> findAll() {
+		Flux<T> entities = service.findAll();
 		
-		return new ResponseEntity<List<T>>(entities, HttpStatus.OK);
+		return new ResponseEntity<>(entities, HttpStatus.OK);
 	}
 	
 	@PostMapping
-	public ResponseEntity<T> save(@Valid @RequestBody T entity) {
-		T created = (T) service.save(entity);
+	public ResponseEntity<Mono<T>> save(@Valid @RequestBody T entity) {
+		Mono<T> created = service.save(entity);
 		
 		if(created == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);			
 		}
 		
-		return new ResponseEntity<T>(created, HttpStatus.CREATED);
+		return new ResponseEntity<>(created, HttpStatus.CREATED);
 	}
 	
 	@PutMapping
-	public ResponseEntity<T> update(@Valid @RequestBody T entity) {
-		T updated = (T) service.save(entity);
+	public ResponseEntity<Mono<T>> update(@Valid @RequestBody T entity) {
+		Mono<T> updated = service.save(entity);
 		
-		return new ResponseEntity<T>(updated, HttpStatus.OK);
+		return new ResponseEntity<>(updated, HttpStatus.OK);
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<T> getById(@PathVariable Long id){
-		T entity = (T) service.findById(id);
+	public ResponseEntity<Mono<T>> getById(@PathVariable Long id){
+		Mono<T> entity = service.findById(id);
 		
 		if(entity == null) {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);			
 		}
 		
-		return new ResponseEntity<T>(entity, HttpStatus.OK);
+		return new ResponseEntity<>(entity, HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<T> deleteById(@PathVariable Long id) {
-		T entity = (T) service.findById(id);
-		
-		if(entity == null || entity.getId() != id) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
-		service.delete(entity);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	public ResponseEntity<Mono<T>> deleteById(@PathVariable Long id) {
+		Mono<T> mono = service.findById(id);
+
+		if (Objects.isNull(mono))
+			return new ResponseEntity<>(Mono.empty(), HttpStatus.BAD_REQUEST);
+
+		Mono<T> result = mono.
+				switchIfEmpty(Mono.empty()).
+				filter(Objects::nonNull).
+				flatMap(studentToBeDeleted -> service.delete(studentToBeDeleted).then(Mono.just(studentToBeDeleted)));
+
+		return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 	}
 	
 }

@@ -13,9 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import br.com.assembleia.backendapi.exception.CpfJaAssociadoException;
 import br.com.assembleia.backendapi.model.Associado;
 import br.com.assembleia.backendapi.repository.AssociadoRepository;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-public class AssociadoServiceTest {
+class AssociadoServiceTest {
 	
 	@Mock
 	private AssociadoRepository repository;
@@ -31,8 +32,8 @@ public class AssociadoServiceTest {
     	associado.setId(1l);
     	
     	when(repository.existsByCpf(associado.getCpf())).thenReturn(false);
-    	when(service.save(associado)).thenReturn(associado);
-    	
+    	when(service.save(associado)).thenReturn(Mono.just(associado));
+
     	assertTrue(service.save(associado).equals(associado));
     }
     

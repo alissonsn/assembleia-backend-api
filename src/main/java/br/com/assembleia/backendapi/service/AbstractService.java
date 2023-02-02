@@ -1,17 +1,16 @@
 package br.com.assembleia.backendapi.service;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import br.com.assembleia.backendapi.model.AbstractEntity;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * 
  * @author Alisson Nascimento
  *
  */
-public class AbstractService<T extends AbstractEntity, R extends JpaRepository<T, Long>>  {
+public class AbstractService<T extends AbstractEntity, R extends ReactiveCrudRepository<T, Long>>  {
 	
 	protected final R repository;
 	
@@ -19,31 +18,31 @@ public class AbstractService<T extends AbstractEntity, R extends JpaRepository<T
 		this.repository = repository;
 	}
 	
-	public List<T> findAll() {
+	public Flux<T> findAll() {
 		return repository.findAll();
 	}
 	
-	public T save(T entity) {		
+	public Mono<T> save(T entity) {
 		return repository.save(entity);
 	}
 	
-	public T update(T entity) {
+	public Mono<T> update(T entity) {
 		return repository.save(entity); 
 	}
 	
-	public T findById(Long id) {
-		return repository.findById(id).get();
+	public Mono<T> findById(Long id) {
+		return repository.findById(id);
 	}
 	
 	public void deleteById(Long id) {
 		repository.deleteById(id);
 	}
 	
-	public void delete(T entity) {
-		repository.delete(entity);
+	public Mono<Void> delete(T entity) {
+		return repository.delete(entity);
 	}
 
-	public long count() {
+	public Mono<Long> count() {
 		return repository.count();
 	}
 	

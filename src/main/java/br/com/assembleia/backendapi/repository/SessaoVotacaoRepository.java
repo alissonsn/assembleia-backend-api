@@ -1,21 +1,19 @@
 package br.com.assembleia.backendapi.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import br.com.assembleia.backendapi.model.Pauta;
 import br.com.assembleia.backendapi.model.SessaoVotacao;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 
 /**
  * 
  * @author Alisson Nascimento
  *
  */
-public interface SessaoVotacaoRepository extends JpaRepository<SessaoVotacao, Long> {
+public interface SessaoVotacaoRepository extends ReactiveCrudRepository<SessaoVotacao, Long> {
 
-	SessaoVotacao findByPautaEquals(Pauta Pauta);
+	SessaoVotacao findByPautaEquals(Pauta pauta);
 	
-	List<SessaoVotacao> findByAtivaIsTrue();
+	Flux<SessaoVotacao> findByAtivaIsTrue();
 	
 }

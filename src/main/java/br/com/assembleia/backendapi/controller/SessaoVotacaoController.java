@@ -17,6 +17,7 @@ import br.com.assembleia.backendapi.repository.SessaoVotacaoRepository;
 import br.com.assembleia.backendapi.service.SessaoVotacaoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import reactor.core.publisher.Mono;
 
 /**
  * @author Alisson Nascimento
@@ -43,16 +44,19 @@ public class SessaoVotacaoController extends AbstractController<SessaoVotacao, S
 	 */
 	@ApiOperation(value = "Método responsável por registrar o voto na sessão de votação", code = 200)
 	@PostMapping("/votar")
-	public ResponseEntity<ResponseVoto> votar(@RequestBody RequestVoto votoDTO) 
+	public ResponseEntity<Mono<ResponseVoto>> votar(@RequestBody RequestVoto votoDTO)
 			throws SessaoVotacaoException, VotoException {
-		var v = service.votar(votoDTO.getIdAssociado(), votoDTO.getIdPauta(), votoDTO.getVoto());
-		
-		var responseVoto = new ResponseVoto();
-		responseVoto.setNome(v.getAssociado().getNome());
-		responseVoto.setPauta(v.getSessao().getPauta().getNome());
-		responseVoto.setVoto(v.getVoto());
-		
-		return new ResponseEntity<>(responseVoto, HttpStatus.OK);
+		var monoVoto = service.votar(votoDTO.getIdAssociado(), votoDTO.getIdPauta(), votoDTO.getVoto());
+
+		var monoResponseVoto = monoVoto.switchIfEmpty(Mono.empty()).flatMap(v -> {
+			var responseVoto = new ResponseVoto();
+			responseVoto.setNome(v.getAssociado().getNome());
+			responseVoto.setPauta(v.getSessao().getPauta().getNome());
+			responseVoto.setVoto(v.getVoto());
+			return Mono.just(responseVoto);
+		});
+
+		return new ResponseEntity<>(monoResponseVoto, HttpStatus.OK);
 	}
 
 }
